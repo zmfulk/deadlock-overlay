@@ -1,0 +1,29 @@
+{
+    "settings": {
+        "show_leaderboard": true
+    },
+    "weekly_record": {
+        "wins": "0",
+        "losses": "0"
+    },
+    "characters": [
+        {
+            "name": "Mina",
+            "games": "42",
+            "wins": "24",
+            "winrate": "57%"
+        },
+        {
+            "name": "Seven",
+            "games": "30",
+            "wins": "21",
+            "winrate": "70%"
+        },
+        {
+            "name": "Lady Geist",
+            "games": "20",
+            "wins": "12",
+            "winrate": "60%"
+        }
+    ]
+}

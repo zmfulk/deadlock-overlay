@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deadlock Stream Overlay</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        body {
+            width: 1920px;
+            height: 1080px;
+            background-color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- WEEKLY RECORD --- */
+        .weekly-record {
+            position: absolute;
+            top: 210px;
+            left: 40px;
+            background: rgba(20, 20, 25, 0.85);
+            border-left: 5px solid #cfb991;
+            padding: 12px 20px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            min-width: 200px;
+        }
+
+        .weekly-record h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #aaaaaa;
+            margin-bottom: 4px;
+        }
+
+        .weekly-record .score {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        /* --- TOP CHARACTERS --- */
+        .leaderboard {
+            position: absolute;
+            top: 15px;
+            right: 30px;
+            background: rgba(20, 20, 25, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 260px;
+            display: block; /* Default block, JS handles hiding */
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
+        .leaderboard-header h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #aaaaaa;
+        }
+
+        h2.header-winrate {
+            font-size: 10px;
+            color: #cfb991;
+            letter-spacing: 1px;
+        }
+
+        .char-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .char-row:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Avatar Container */
+        .char-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            background: #333;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden; 
+        }
+
+        /* Image specific styling */
+        .char-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            object-position: center top; 
+        }
+
+        .char-info {
+            flex-grow: 1;
+        }
+
+        .char-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .char-stats {
+            font-size: 12px;
+            color: #bbbbbb;
+        }
+
+        .char-winrate {
+            font-size: 16px;
+            font-weight: 700;
+            color: #cfb991;
+            text-align: right;
+            min-width: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="weekly-record">
+        <h2>Weekly Record</h2>
+        <div class="score" id="record-display">0W - 0L</div>
+    </div>
+
+    <div class="leaderboard" id="leaderboard-container">
+        <div class="leaderboard-header">
+            <h2>Top Characters</h2>
+            <h2 class="header-winrate">WIN %</h2>
+        </div>
+        <div id="characters-list">
+            </div>
+    </div>
+
+    <script>
+        let lastDataString = "";
+
+        async function updateOverlay() {
+            try {
+                const response = await fetch('data.json?cache_bypass=' + Date.now());
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                const currentDataString = JSON.stringify(data);
+                
+                if (currentDataString === lastDataString) return;
+                lastDataString = currentDataString;
+
+                // --- NEW VISIBILITY LOGIC ---
+                const leaderboardEl = document.getElementById('leaderboard-container');
+                const showLeaderboard = data.settings ? data.settings.show_leaderboard : true;
+                
+                if (showLeaderboard) {
+                    leaderboardEl.style.display = "block";
+                } else {
+                    leaderboardEl.style.display = "none";
+                }
+
+                // Update text
+                document.getElementById('record-display').innerText = 
+                    `${data.weekly_record.wins}W - ${data.weekly_record.losses}L`;
+
+                const listContainer = document.getElementById('characters-list');
+                listContainer.innerHTML = ""; 
+
+                data.characters.forEach(char => {
+                    const shortName = char.name.substring(0,2).toUpperCase();
+                    
+                    const cleanFileName = char.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    
+                    let wr = char.winrate;
+                    if (!wr.includes('%')) wr += '%';
+
+                    const imageTag = `<img src="images/${cleanFileName}.png" onerror="this.onerror=null; this.parentNode.innerHTML='${shortName}';">`;
+
+                    const rowHTML = `
+                        <div class="char-row">
+                            <div class="char-avatar">${imageTag}</div>
+                            <div class="char-info">
+                                <div class="char-name">${char.name}</div>
+                                <div class="char-stats">${char.games} Games Played</div>
+                            </div>
+                            <div class="char-winrate">${wr}</div>
+                        </div>
+                    `;
+                    listContainer.innerHTML += rowHTML;
+                });
+
+            } catch (error) {
+                console.log("Waiting for data...");
+            }
+        }
+
+        setInterval(updateOverlay, 1500);
+        updateOverlay();
+    </script>
+</body>
+</html>
