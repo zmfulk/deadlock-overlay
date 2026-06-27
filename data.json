@@ -1,10 +1,11 @@
 {
     "settings": {
-        "show_leaderboard": true
+        "show_leaderboard": true,
+        "show_record": true
     },
     "weekly_record": {
-        "wins": "1",
-        "losses": "0"
+        "wins": "3",
+        "losses": "3"
     },
     "characters": [
         {
@@ -21,8 +22,8 @@
         },
         {
             "name": "Lady Geist",
-            "games": "20",
-            "wins": "12",
+            "games": "25",
+            "wins": "15",
             "winrate": "60%"
         }
     ]

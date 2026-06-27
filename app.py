@@ -10,13 +10,13 @@ class OverlayController(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Deadlock Overlay Controller")
-        self.geometry("450x760") # Slightly taller to accommodate the new buttons
+        self.geometry("450x760")
         self.resizable(False, False)
 
         # File path for JSON data
         self.json_path = "data.json"
 
-        # --- WEEKLY RECORD SECTION ---
+        # --- RECORD SECTION ---
         self.record_frame = ctk.CTkFrame(self)
         self.record_frame.pack(padx=20, pady=15, fill="x")
         
@@ -92,6 +92,20 @@ class OverlayController(ctk.CTk):
         self.settings_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.settings_frame.pack(padx=20, pady=(10, 0), fill="x")
 
+        self.settings_label = ctk.CTkLabel(self.settings_frame, text="Settings", font=("Arial", 16, "bold"))
+        self.settings_label.pack(pady=0, padx=10, anchor="w")
+
+        # Weekly Record Toggle
+        self.show_record_var = ctk.BooleanVar(value=True)
+        self.record_toggle = ctk.CTkCheckBox(
+            self.settings_frame,
+            text="Show Weekly Record",
+            variable=self.show_record_var,
+            font=("Arial", 13, "bold")
+        )
+        self.record_toggle.pack(anchor="w", padx=10, pady=(5, 5))
+
+        # Leaderboard Toggle
         self.show_leaderboard_var = ctk.BooleanVar(value=True) 
         self.leaderboard_toggle = ctk.CTkCheckBox(
             self.settings_frame, 
@@ -148,7 +162,8 @@ class OverlayController(ctk.CTk):
     def save_data(self):
         data = {
             "settings": {
-                "show_leaderboard": self.show_leaderboard_var.get()
+                "show_leaderboard": self.show_leaderboard_var.get(),
+                "show_record": self.show_record_var.get()
             },
             "weekly_record": {
                 "wins": self.wins_entry.get() or "0",
@@ -194,6 +209,9 @@ class OverlayController(ctk.CTk):
                 
                 show_board = data.get("settings", {}).get("show_leaderboard", True)
                 self.show_leaderboard_var.set(show_board)
+
+                show_record = data.get("settings", {}).get("show_record", True)
+                self.show_record_var.set(show_record)
 
                 self.wins_entry.insert(0, data["weekly_record"]["wins"])
                 self.losses_entry.insert(0, data["weekly_record"]["losses"])

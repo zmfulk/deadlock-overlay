@@ -145,7 +145,7 @@
 </head>
 <body>
 
-    <div class="weekly-record">
+    <div class="weekly-record" id="record-container">
         <h2>Weekly Record</h2>
         <div class="score" id="record-display">0W - 0L</div>
     </div>
@@ -173,7 +173,7 @@
                 if (currentDataString === lastDataString) return;
                 lastDataString = currentDataString;
 
-                // --- NEW VISIBILITY LOGIC ---
+                // --- LEADERBOARD VISIBILITY LOGIC ---
                 const leaderboardEl = document.getElementById('leaderboard-container');
                 const showLeaderboard = data.settings ? data.settings.show_leaderboard : true;
                 
@@ -181,6 +181,16 @@
                     leaderboardEl.style.display = "block";
                 } else {
                     leaderboardEl.style.display = "none";
+                }
+                
+                // --- WEEKLY RECORD VISIBILITY ---
+                const recordEl = document.getElementById('record-container');
+                const showRecord = data.settings ? (data.settings.show_record !== false) : true;
+                
+                if (showRecord) {
+                    recordEl.style.display = "block";
+                } else {
+                    recordEl.style.display = "none";
                 }
 
                 // Update text
