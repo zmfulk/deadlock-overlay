@@ -24,14 +24,14 @@
         /* --- WEEKLY RECORD --- */
         .weekly-record {
             position: absolute;
-            top: 210px;
+            top: 220px;
             left: 40px;
             background: rgba(20, 20, 25, 0.85);
             border-left: 5px solid #cfb991;
-            padding: 12px 20px;
+            padding: 10px 12px;
             border-radius: 0 8px 8px 0;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            min-width: 200px;
+            min-width: 120px;
         }
 
         .weekly-record h2 {
@@ -43,7 +43,7 @@
         }
 
         .weekly-record .score {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
         }
 
@@ -141,12 +141,68 @@
             text-align: right;
             min-width: 50px;
         }
+
+        .rank-container {
+            position: absolute;
+            top: 220px; 
+            left: 205px;
+            background: rgba(20, 20, 25, 0.85);
+            border-left: 5px solid #cfb991;
+            padding: 8px 10px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            min-width: 120px;
+        }
+
+        .rank-container h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #aaaaaa;
+            margin-bottom: 2px;
+        }
+
+        .rank-display {
+            display: flex;
+            align-items: center;
+        }
+
+        .rank-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #cfb991;
+        }
+
+        .rank-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .rank-text {
+            font-size: 24px;
+            font-weight: 800;
+        }
     </style>
 </head>
 <body>
 
+    <div class="rank-container" id="rank-container">
+        <h2>Current Rank</h2>
+        <div class="rank-display">
+            <div class="rank-icon" id="rank-icon-wrapper"></div>
+            <div class="rank-text" id="rank-text-display">Unranked</div>
+        </div>
+    </div>
+
     <div class="weekly-record" id="record-container">
-        <h2>Weekly Record</h2>
+        <h2 id="record-title">Weekly Record</h2> <!-- Added ID here -->
         <div class="score" id="record-display">0W - 0L</div>
     </div>
 
@@ -173,6 +229,29 @@
                 if (currentDataString === lastDataString) return;
                 lastDataString = currentDataString;
 
+                // --- RANK VISIBILITY AND LOGIC ---
+                const rankEl = document.getElementById('rank-container');
+                const showRank = data.settings ? (data.settings.show_rank !== false) : true;
+                
+                if (showRank && data.rank_info) {
+                    rankEl.style.display = "block";
+                    
+                    const rankBase = data.rank_info.rank;
+                    const division = data.rank_info.division;
+                    const cleanRankName = rankBase.toLowerCase();
+
+                    // Hide division number if they are unranked
+                    const fullRankText = rankBase === "Unranked" ? rankBase : `${rankBase} ${division}`;
+                    document.getElementById('rank-text-display').innerText = fullRankText;
+
+                    // Looks for 'images/initiate.png', falls back to a star if missing
+                    const rankImageTag = `<img src="images/${cleanRankName}.png" onerror="this.onerror=null; this.parentNode.innerHTML='★';">`;
+                    document.getElementById('rank-icon-wrapper').innerHTML = rankImageTag;
+                    
+                } else {
+                    rankEl.style.display = "none";
+                }
+
                 // --- LEADERBOARD VISIBILITY LOGIC ---
                 const leaderboardEl = document.getElementById('leaderboard-container');
                 const showLeaderboard = data.settings ? data.settings.show_leaderboard : true;
@@ -194,11 +273,14 @@
                 }
 
                 // Update text
+                const recordType = data.weekly_record.type ? data.weekly_record.type : "Weekly Record";
+                document.getElementById('record-title').innerText = recordType;
+                
                 document.getElementById('record-display').innerText = 
                     `${data.weekly_record.wins}W - ${data.weekly_record.losses}L`;
 
                 const listContainer = document.getElementById('characters-list');
-                listContainer.innerHTML = ""; 
+                listContainer.innerHTML = "";
 
                 data.characters.forEach(char => {
                     const shortName = char.name.substring(0,2).toUpperCase();

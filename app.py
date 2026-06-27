@@ -10,18 +10,43 @@ class OverlayController(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Deadlock Overlay Controller")
-        self.geometry("450x760")
+        self.geometry("450x880")
         self.resizable(False, False)
 
         # File path for JSON data
         self.json_path = "data.json"
 
+        # --- RANK SECTION ---
+        self.rank_frame = ctk.CTkFrame(self)
+        self.rank_frame.pack(padx=20, pady=(15, 0), fill="x")
+
+        self.rank_label = ctk.CTkLabel(self.rank_frame, text="Current Rank", font=("Arial", 16, "bold"))
+        self.rank_label.grid(row=0, column=0, columnspan=2, pady=5, padx=10, sticky="w")
+
+        self.rank_list = ["Unranked", "Initiate", "Seeker", "Alchemist", "Arcanist", "Ritualist", "Emissary", "Archon", "Oracle", "Phantom", "Ascendant", "Eternus"]
+        self.division_list = ["I", "II", "III", "IV", "V", "VI"]
+
+        self.rank_var = ctk.StringVar(value="Unranked")
+        self.rank_menu = ctk.CTkOptionMenu(self.rank_frame, values=self.rank_list, variable=self.rank_var, width=150)
+        self.rank_menu.grid(row=1, column=0, padx=10, pady=(0, 10))
+
+        self.division_var = ctk.StringVar(value="I")
+        self.division_menu = ctk.CTkOptionMenu(self.rank_frame, values=self.division_list, variable=self.division_var, width=80)
+        self.division_menu.grid(row=1, column=1, padx=10, pady=(0, 10))
+
         # --- RECORD SECTION ---
         self.record_frame = ctk.CTkFrame(self)
         self.record_frame.pack(padx=20, pady=15, fill="x")
         
-        self.record_label = ctk.CTkLabel(self.record_frame, text="Weekly Record", font=("Arial", 16, "bold"))
-        self.record_label.grid(row=0, column=0, columnspan=2, pady=5, padx=10, sticky="w")
+        self.record_type_var = ctk.StringVar(value="Weekly Record")
+        self.record_type_menu = ctk.CTkOptionMenu(
+            self.record_frame, 
+            values=["Daily Record", "Weekly Record", "Monthly Record"],
+            variable=self.record_type_var,
+            font=("Arial", 14, "bold"),
+            width=180
+        )
+        self.record_type_menu.grid(row=0, column=0, columnspan=2, pady=5, padx=10, sticky="w")
 
         # Record Headers
         self.wins_label = ctk.CTkLabel(self.record_frame, text="Wins", font=("Arial", 12, "bold"))
@@ -95,6 +120,15 @@ class OverlayController(ctk.CTk):
         self.settings_label = ctk.CTkLabel(self.settings_frame, text="Settings", font=("Arial", 16, "bold"))
         self.settings_label.pack(pady=0, padx=10, anchor="w")
 
+        self.show_rank_var = ctk.BooleanVar(value=True)
+        self.rank_toggle = ctk.CTkCheckBox(
+            self.settings_frame,
+            text="Show Current Rank",
+            variable=self.show_rank_var,
+            font=("Arial", 13, "bold")
+        )
+        self.rank_toggle.pack(anchor="w", padx=10, pady=(5, 0))
+
         # Weekly Record Toggle
         self.show_record_var = ctk.BooleanVar(value=True)
         self.record_toggle = ctk.CTkCheckBox(
@@ -163,9 +197,15 @@ class OverlayController(ctk.CTk):
         data = {
             "settings": {
                 "show_leaderboard": self.show_leaderboard_var.get(),
-                "show_record": self.show_record_var.get()
+                "show_record": self.show_record_var.get(),
+                "show_rank": self.show_rank_var.get()
+            },
+            "rank_info": {
+                "rank": self.rank_var.get(),
+                "division": self.division_var.get()
             },
             "weekly_record": {
+                "type": self.record_type_var.get(), # ADD THIS LINE
                 "wins": self.wins_entry.get() or "0",
                 "losses": self.losses_entry.get() or "0"
             },
@@ -207,11 +247,21 @@ class OverlayController(ctk.CTk):
                 with open(self.json_path, "r") as f:
                     data = json.load(f)
                 
+                show_rank = data.get("settings", {}).get("show_rank", True)
+                self.show_rank_var.set(show_rank)
+
+                rank_info = data.get("rank_info", {})
+                self.rank_var.set(rank_info.get("rank", "Unranked"))
+                self.division_var.set(rank_info.get("division", "I"))
+                
                 show_board = data.get("settings", {}).get("show_leaderboard", True)
                 self.show_leaderboard_var.set(show_board)
 
                 show_record = data.get("settings", {}).get("show_record", True)
                 self.show_record_var.set(show_record)
+
+                record_type = data.get("weekly_record", {}).get("type", "Weekly Record")
+                self.record_type_var.set(record_type)
 
                 self.wins_entry.insert(0, data["weekly_record"]["wins"])
                 self.losses_entry.insert(0, data["weekly_record"]["losses"])

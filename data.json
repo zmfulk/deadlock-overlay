@@ -1,9 +1,15 @@
 {
     "settings": {
         "show_leaderboard": true,
-        "show_record": true
+        "show_record": true,
+        "show_rank": true
+    },
+    "rank_info": {
+        "rank": "Initiate",
+        "division": "V"
     },
     "weekly_record": {
+        "type": "Weekly Record",
         "wins": "3",
         "losses": "3"
     },
