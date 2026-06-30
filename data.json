@@ -11,7 +11,8 @@
     "weekly_record": {
         "type": "Weekly Record",
         "wins": "3",
-        "losses": "3"
+        "losses": "3",
+        "streak": 0
     },
     "characters": [
         {
@@ -27,10 +28,10 @@
             "winrate": "70%"
         },
         {
-            "name": "Lady Geist",
-            "games": "25",
-            "wins": "15",
-            "winrate": "60%"
+            "name": "Warden",
+            "games": "4",
+            "wins": "3",
+            "winrate": "75%"
         }
     ]
 }

@@ -16,6 +16,9 @@ class OverlayController(ctk.CTk):
         # File path for JSON data
         self.json_path = "data.json"
 
+        self.is_loaded = False # Flag to indicate if data has been loaded
+        self.current_streak = 0 # win streak counter
+
         # --- RANK SECTION ---
         self.rank_frame = ctk.CTkFrame(self)
         self.rank_frame.pack(padx=20, pady=(15, 0), fill="x")
@@ -27,11 +30,11 @@ class OverlayController(ctk.CTk):
         self.division_list = ["I", "II", "III", "IV", "V", "VI"]
 
         self.rank_var = ctk.StringVar(value="Unranked")
-        self.rank_menu = ctk.CTkOptionMenu(self.rank_frame, values=self.rank_list, variable=self.rank_var, width=150)
+        self.rank_menu = ctk.CTkOptionMenu(self.rank_frame, values=self.rank_list, variable=self.rank_var, width=150, command=lambda _: self.save_data())
         self.rank_menu.grid(row=1, column=0, padx=10, pady=(0, 10))
 
         self.division_var = ctk.StringVar(value="I")
-        self.division_menu = ctk.CTkOptionMenu(self.rank_frame, values=self.division_list, variable=self.division_var, width=80)
+        self.division_menu = ctk.CTkOptionMenu(self.rank_frame, values=self.division_list, variable=self.division_var, width=80, command=lambda _: self.save_data())
         self.division_menu.grid(row=1, column=1, padx=10, pady=(0, 10))
 
         # --- RECORD SECTION ---
@@ -44,7 +47,8 @@ class OverlayController(ctk.CTk):
             values=["Daily Record", "Weekly Record", "Monthly Record"],
             variable=self.record_type_var,
             font=("Arial", 14, "bold"),
-            width=180
+            width=180,
+            command=lambda _: self.save_data()
         )
         self.record_type_menu.grid(row=0, column=0, columnspan=2, pady=5, padx=10, sticky="w")
 
@@ -55,12 +59,33 @@ class OverlayController(ctk.CTk):
         self.losses_label = ctk.CTkLabel(self.record_frame, text="Losses", font=("Arial", 12, "bold"))
         self.losses_label.grid(row=1, column=1, padx=10, pady=(5, 0))
 
-        # Record Inputs
-        self.wins_entry = ctk.CTkEntry(self.record_frame, placeholder_text="0", width=180)
-        self.wins_entry.grid(row=2, column=0, padx=10, pady=(0, 10))
-        
-        self.losses_entry = ctk.CTkEntry(self.record_frame, placeholder_text="0", width=180)
-        self.losses_entry.grid(row=2, column=1, padx=10, pady=(0, 10))
+        # --- WINS CONTROL ---
+        self.wins_control_frame = ctk.CTkFrame(self.record_frame, fg_color="transparent")
+        self.wins_control_frame.grid(row=2, column=0, padx=10, pady=(0, 10))
+
+        self.wins_minus_btn = ctk.CTkButton(self.wins_control_frame, text="-", width=30, font=("Arial", 16, "bold"), command=lambda: self.adjust_score(self.wins_entry, -1))
+        self.wins_minus_btn.pack(side="left", padx=(0, 5))
+
+        self.wins_entry = ctk.CTkEntry(self.wins_control_frame, placeholder_text="0", width=100, justify="center")
+        self.wins_entry.pack(side="left")
+
+        self.wins_plus_btn = ctk.CTkButton(self.wins_control_frame, text="+", width=30, font=("Arial", 16, "bold"), command=lambda: self.adjust_score(self.wins_entry, 1))
+        self.wins_plus_btn.pack(side="left", padx=(5, 0))
+        self.wins_entry.bind("<KeyRelease>", lambda event: self.save_data())
+
+        # --- LOSSES CONTROL ---
+        self.losses_control_frame = ctk.CTkFrame(self.record_frame, fg_color="transparent")
+        self.losses_control_frame.grid(row=2, column=1, padx=10, pady=(0, 10))
+
+        self.losses_minus_btn = ctk.CTkButton(self.losses_control_frame, text="-", width=30, font=("Arial", 16, "bold"), command=lambda: self.adjust_score(self.losses_entry, -1))
+        self.losses_minus_btn.pack(side="left", padx=(0, 5))
+
+        self.losses_entry = ctk.CTkEntry(self.losses_control_frame, placeholder_text="0", width=100, justify="center")
+        self.losses_entry.pack(side="left")
+
+        self.losses_plus_btn = ctk.CTkButton(self.losses_control_frame, text="+", width=30, font=("Arial", 16, "bold"), command=lambda: self.adjust_score(self.losses_entry, 1))
+        self.losses_plus_btn.pack(side="left", padx=(5, 0))
+        self.losses_entry.bind("<KeyRelease>", lambda event: self.save_data())
 
         # --- CHARACTER STATS SECTION ---
         self.chars_frame = ctk.CTkFrame(self)
@@ -125,7 +150,8 @@ class OverlayController(ctk.CTk):
             self.settings_frame,
             text="Show Current Rank",
             variable=self.show_rank_var,
-            font=("Arial", 13, "bold")
+            font=("Arial", 13, "bold"),
+            command=self.save_data
         )
         self.rank_toggle.pack(anchor="w", padx=10, pady=(5, 0))
 
@@ -135,7 +161,8 @@ class OverlayController(ctk.CTk):
             self.settings_frame,
             text="Show Weekly Record",
             variable=self.show_record_var,
-            font=("Arial", 13, "bold")
+            font=("Arial", 13, "bold"),
+            command=self.save_data
         )
         self.record_toggle.pack(anchor="w", padx=10, pady=(5, 5))
 
@@ -145,7 +172,8 @@ class OverlayController(ctk.CTk):
             self.settings_frame, 
             text="Show Top Characters Leaderboard", 
             variable=self.show_leaderboard_var,
-            font=("Arial", 13, "bold")
+            font=("Arial", 13, "bold"),
+            command=self.save_data
         )
         self.leaderboard_toggle.pack(anchor="w", padx=10)
 
@@ -155,6 +183,8 @@ class OverlayController(ctk.CTk):
 
         # Load existing data (will override the 3 default rows if data exists)
         self.load_existing_data()
+
+        self.is_loaded = True  # Set the flag to True after loading data
 
     def add_char_row(self, name_val=None, games_val="", wins_val=""):
         # Prevent adding an absurd number of rows that break the window height
@@ -175,10 +205,12 @@ class OverlayController(ctk.CTk):
         games_entry = ctk.CTkEntry(row_frame, placeholder_text="Games", width=100)
         if games_val: games_entry.insert(0, games_val)
         games_entry.grid(row=0, column=1, padx=5)
+        games_entry.bind("<KeyRelease>", lambda event: self.save_data())
 
         char_wins_entry = ctk.CTkEntry(row_frame, placeholder_text="Wins", width=100)
         if wins_val: char_wins_entry.insert(0, wins_val)
         char_wins_entry.grid(row=0, column=2, padx=5)
+        char_wins_entry.bind("<KeyRelease>", lambda event: self.save_data())
 
         self.char_rows.append({
             "frame": row_frame, # Save the frame so we can destroy it later
@@ -191,9 +223,14 @@ class OverlayController(ctk.CTk):
         # Prevent removing all rows (keep at least 1)
         if len(self.char_rows) > 1:
             last_row = self.char_rows.pop()
-            last_row["frame"].destroy() # Deletes the row from the GUI
+            last_row["frame"].destroy()
+            self.save_data()
 
     def save_data(self):
+        
+        if not getattr(self, "is_loaded", False):
+            return
+        
         data = {
             "settings": {
                 "show_leaderboard": self.show_leaderboard_var.get(),
@@ -205,9 +242,10 @@ class OverlayController(ctk.CTk):
                 "division": self.division_var.get()
             },
             "weekly_record": {
-                "type": self.record_type_var.get(), # ADD THIS LINE
+                "type": self.record_type_var.get(),
                 "wins": self.wins_entry.get() or "0",
-                "losses": self.losses_entry.get() or "0"
+                "losses": self.losses_entry.get() or "0",
+                "streak": getattr(self, "current_streak", 0)  # Save the current streak
             },
             "characters": []
         }
@@ -263,6 +301,8 @@ class OverlayController(ctk.CTk):
                 record_type = data.get("weekly_record", {}).get("type", "Weekly Record")
                 self.record_type_var.set(record_type)
 
+                self.current_streak = data.get("weekly_record", {}).get("streak", 0)
+
                 self.wins_entry.insert(0, data["weekly_record"]["wins"])
                 self.losses_entry.insert(0, data["weekly_record"]["losses"])
 
@@ -284,6 +324,33 @@ class OverlayController(ctk.CTk):
 
             except Exception as e:
                 print(f"Error loading existing JSON: {e}")
+    
+    def adjust_score(self, entry_widget, amount):
+        current_val = entry_widget.get()
+        
+        try:
+            current_num = int(current_val) if current_val else 0
+        except ValueError:
+            current_num = 0
+            
+        new_num = current_num + amount
+        
+        if new_num < 0:
+            new_num = 0 
+            
+        entry_widget.delete(0, "end")
+        entry_widget.insert(0, str(new_num))
+
+        # --- STREAK LOGIC ---
+        if entry_widget == self.wins_entry:
+            if amount > 0:
+                self.current_streak += amount
+            elif amount < 0: # If you accidentally added a win and need to subtract it
+                self.current_streak = max(0, self.current_streak - 1)
+        elif entry_widget == self.losses_entry and amount > 0:
+            self.current_streak = 0 # Instantly break streak on a loss
+
+        self.save_data()
 
 if __name__ == "__main__":
     app = OverlayController()

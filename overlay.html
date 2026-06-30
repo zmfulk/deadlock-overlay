@@ -189,6 +189,21 @@
             font-size: 24px;
             font-weight: 800;
         }
+
+        .streak-container {
+            display: none; 
+            position: absolute; /* Takes the text out of the box's structure */
+            bottom: 100%; /* Anchors it exactly above the top edge of the rectangle */
+            left: 0; /* Aligns it cleanly with the left edge */
+            margin-bottom: 6px; /* Adds a tiny gap so it doesn't touch the box */
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffaa00; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+            white-space: nowrap; /* Forces the text to stay on one line */
+        }
     </style>
 </head>
 <body>
@@ -202,7 +217,8 @@
     </div>
 
     <div class="weekly-record" id="record-container">
-        <h2 id="record-title">Weekly Record</h2> <!-- Added ID here -->
+        <div class="streak-container" id="streak-display">🔥 2 WINS</div>
+        <h2 id="record-title">Weekly Record</h2>
         <div class="score" id="record-display">0W - 0L</div>
     </div>
 
@@ -278,6 +294,17 @@
                 
                 document.getElementById('record-display').innerText = 
                     `${data.weekly_record.wins}W - ${data.weekly_record.losses}L`;
+
+                // --- STREAK LOGIC ---
+                const streakEl = document.getElementById('streak-display');
+                const currentStreak = data.weekly_record.streak || 0;
+
+                if (currentStreak >= 2) {
+                    streakEl.innerText = `🔥 ${currentStreak} WINS`;
+                    streakEl.style.display = "block";
+                } else {
+                    streakEl.style.display = "none";
+                }
 
                 const listContainer = document.getElementById('characters-list');
                 listContainer.innerHTML = "";
