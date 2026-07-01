@@ -381,7 +381,16 @@
                     recordEl.style.display = "none";
                 }
 
-                // Update text
+                // --- LAST 5 GAMES VISIBILITY ---
+                const last5El = document.getElementById('last-5-section');
+                const showLast5 = data.settings ? (data.settings.show_last5 !== false) : true;
+                
+                if (showLast5) {
+                    last5El.style.display = "block";
+                } else {
+                    last5El.style.display = "none";
+                }
+
                 const recordType = data.weekly_record.type ? data.weekly_record.type : "Weekly Record";
                 document.getElementById('record-title').innerText = recordType;
                 
@@ -423,7 +432,7 @@
                         </div>
                     `;
                     listContainer.innerHTML += rowHTML;
-                }); // <--- MOVED BRACKET HERE (Closes the data.characters.forEach loop)
+                });
 
                 // --- LAST 5 GAMES LOGIC ---
                 const matchesWrapper = document.getElementById('matches-wrapper');
@@ -436,7 +445,7 @@
                             const box = document.createElement('div');
                             box.className = `match-box ${match.result === 'Win' ? 'win' : 'loss'}`;
                             
-                            let safeCharName = match.char.toLowerCase().replace(" & ", "_").replace(" ", "_");
+                            let safeCharName = match.char.toLowerCase().replace(/[^a-z0-9]/g, '');
                             box.style.backgroundImage = `url('images/${safeCharName}.png')`;
 
                             const badge = document.createElement('div');

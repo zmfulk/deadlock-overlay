@@ -124,7 +124,7 @@ class OverlayController(ctk.CTk):
 
         self.char_rows = []
         
-        # Initialize with 3 default rows
+        
         for _ in range(3):
             self.add_char_row()
 
@@ -199,6 +199,17 @@ class OverlayController(ctk.CTk):
         )
         self.leaderboard_toggle.pack(anchor="w", padx=10)
 
+        # Add this right under self.leaderboard_toggle.pack(...)
+        self.show_last5_var = ctk.BooleanVar(value=True)
+        self.last5_toggle = ctk.CTkCheckBox(
+            self.settings_frame,
+            text="Show Last 5 Games",
+            variable=self.show_last5_var,
+            font=("Arial", 13, "bold"),
+            command=self.save_data
+        )
+        self.last5_toggle.pack(anchor="w", padx=10, pady=(5, 5))
+
         # --- SAVE BUTTON ---
         self.save_btn = ctk.CTkButton(self, text="Update Overlay", command=self.save_data, height=40, font=("Arial", 14, "bold"))
         self.save_btn.pack(padx=20, pady=15, fill="x")
@@ -257,7 +268,8 @@ class OverlayController(ctk.CTk):
             "settings": {
                 "show_leaderboard": self.show_leaderboard_var.get(),
                 "show_record": self.show_record_var.get(),
-                "show_rank": self.show_rank_var.get()
+                "show_rank": self.show_rank_var.get(),
+                "show_last5": self.show_last5_var.get()
             },
             "rank_info": {
                 "rank": self.rank_var.get(),
@@ -326,6 +338,9 @@ class OverlayController(ctk.CTk):
 
                 show_record = data.get("settings", {}).get("show_record", True)
                 self.show_record_var.set(show_record)
+
+                show_last5 = data.get("settings", {}).get("show_last5", True)
+                self.show_last5_var.set(show_last5)
 
                 record_type = data.get("weekly_record", {}).get("type", "Weekly Record")
                 self.record_type_var.set(record_type)

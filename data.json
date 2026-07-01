@@ -2,7 +2,8 @@
     "settings": {
         "show_leaderboard": true,
         "show_record": true,
-        "show_rank": true
+        "show_rank": true,
+        "show_last5": true
     },
     "rank_info": {
         "rank": "Archon",
@@ -53,7 +54,7 @@
         },
         {
             "char": "Lady Geist",
-            "result": "Win"
+            "result": "Loss"
         }
     ]
 }
