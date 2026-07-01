@@ -33,5 +33,27 @@
             "wins": "3",
             "winrate": "75%"
         }
+    ],
+    "last_5_games": [
+        {
+            "char": "Warden",
+            "result": "Loss"
+        },
+        {
+            "char": "Warden",
+            "result": "Win"
+        },
+        {
+            "char": "Warden",
+            "result": "Win"
+        },
+        {
+            "char": "Warden",
+            "result": "Win"
+        },
+        {
+            "char": "Lady Geist",
+            "result": "Win"
+        }
     ]
 }

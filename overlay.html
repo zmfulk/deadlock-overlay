@@ -47,17 +47,25 @@
             font-weight: 800;
         }
 
-        /* --- TOP CHARACTERS --- */
-        .leaderboard {
+        /* --- RIGHT SIDEBAR --- */
+        .right-sidebar {
             position: absolute;
             top: 15px;
             right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        /* --- TOP CHARACTERS --- */
+        .leaderboard {
             background: rgba(20, 20, 25, 0.85);
             padding: 15px;
+            border: 1px solid #cfb991;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             width: 260px;
-            display: block; /* Default block, JS handles hiding */
+            display: block; 
         }
 
         .leaderboard-header {
@@ -192,17 +200,90 @@
 
         .streak-container {
             display: none; 
-            position: absolute; /* Takes the text out of the box's structure */
-            bottom: 100%; /* Anchors it exactly above the top edge of the rectangle */
-            left: 0; /* Aligns it cleanly with the left edge */
-            margin-bottom: 6px; /* Adds a tiny gap so it doesn't touch the box */
+            position: absolute; 
+            bottom: 100%; 
+            left: 0; 
+            margin-bottom: 6px;
             font-size: 15px;
             font-weight: 800;
             color: #ffaa00; 
             text-transform: uppercase;
             letter-spacing: 1px;
             text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
-            white-space: nowrap; /* Forces the text to stay on one line */
+            white-space: nowrap; 
+        }
+
+        .last-5-container {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            background: rgba(20, 20, 25, 0.85);
+            padding: 15px;
+            border: 1px solid #cfb991;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 260px;
+            display: block; 
+        
+        }
+
+        .last-5-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .last-5-title {
+            font-size: 14px;
+            color: #aaaaaa;
+            margin-bottom: -1px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            
+
+        }
+        .matches-wrapper {
+            display: flex;
+            gap: 5px;
+        }
+        .match-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 5px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+        .match-box.win {
+            border-color: #4ade80;
+        }
+        .match-box.loss {
+            border-color: #ef4444;
+        }
+        .match-badge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-top-right-radius: 4px;
+            text-shadow: none;
+        }
+        .match-box.win .match-badge {
+            background-color: #4ade80;
+            color: #052e16;
+        }
+        .match-box.loss .match-badge {
+            background-color: #ef4444;
+            color: #ffffff;
         }
     </style>
 </head>
@@ -222,13 +303,25 @@
         <div class="score" id="record-display">0W - 0L</div>
     </div>
 
-    <div class="leaderboard" id="leaderboard-container">
-        <div class="leaderboard-header">
-            <h2>Top Characters</h2>
-            <h2 class="header-winrate">WIN %</h2>
-        </div>
-        <div id="characters-list">
+    <div class="right-sidebar">
+
+        <div class="leaderboard" id="leaderboard-container">
+            <div class="leaderboard-header">
+                <h2>Top Characters</h2>
+                <h2 class="header-winrate">WIN %</h2>
             </div>
+            <div id="characters-list">
+            </div>
+        </div>
+
+        <div class="last-5-container" id="last-5-section">
+            <div class="last-5-header">
+                <div class="last-5-title">Last 5 Games</div>
+            </div>
+            <div class="matches-wrapper" id="matches-wrapper">
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -330,7 +423,31 @@
                         </div>
                     `;
                     listContainer.innerHTML += rowHTML;
-                });
+                }); // <--- MOVED BRACKET HERE (Closes the data.characters.forEach loop)
+
+                // --- LAST 5 GAMES LOGIC ---
+                const matchesWrapper = document.getElementById('matches-wrapper');
+                matchesWrapper.innerHTML = ''; 
+
+                if (data.last_5_games) {
+                    data.last_5_games.forEach(match => {
+                        if (match.char !== "None") {
+
+                            const box = document.createElement('div');
+                            box.className = `match-box ${match.result === 'Win' ? 'win' : 'loss'}`;
+                            
+                            let safeCharName = match.char.toLowerCase().replace(" & ", "_").replace(" ", "_");
+                            box.style.backgroundImage = `url('images/${safeCharName}.png')`;
+
+                            const badge = document.createElement('div');
+                            badge.className = 'match-badge';
+                            badge.innerText = match.result === 'Win' ? 'W' : 'L';
+
+                            box.appendChild(badge);
+                            matchesWrapper.appendChild(box);
+                        }
+                    });
+                }
 
             } catch (error) {
                 console.log("Waiting for data...");

@@ -10,7 +10,7 @@ class OverlayController(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Deadlock Overlay Controller")
-        self.geometry("450x880")
+        self.geometry("450x1000")
         self.resizable(False, False)
 
         # File path for JSON data
@@ -138,6 +138,28 @@ class OverlayController(ctk.CTk):
         self.remove_btn = ctk.CTkButton(self.action_btn_frame, text="- Remove Character", width=120, fg_color="#b91c1c", hover_color="#991b1b", command=self.remove_char_row)
         self.remove_btn.grid(row=0, column=1, padx=10)
 
+        # --- LAST 5 GAMES SECTION ---
+        self.last5_frame = ctk.CTkFrame(self.chars_frame, fg_color="transparent")
+        self.last5_frame.pack(fill="x", pady=(15, 0))
+
+        self.last5_label = ctk.CTkLabel(self.last5_frame, text="Last 5 Games History", font=("Arial", 14, "bold"))
+        self.last5_label.pack(anchor="w", padx=10, pady=(0, 5))
+
+        self.match_history_vars = []
+        for i in range(5):
+            row_frame = ctk.CTkFrame(self.last5_frame, fg_color="transparent")
+            row_frame.pack(fill="x", padx=10, pady=2)
+            
+            char_var = ctk.StringVar(value="None")
+            char_menu = ctk.CTkOptionMenu(row_frame, values=["None"] + self.character_list, variable=char_var, width=140, command=lambda _: self.save_data())
+            char_menu.pack(side="left", padx=5)
+            
+            result_var = ctk.StringVar(value="Win")
+            result_menu = ctk.CTkOptionMenu(row_frame, values=["Win", "Loss"], variable=result_var, width=80, command=lambda _: self.save_data())
+            result_menu.pack(side="left", padx=5)
+            
+            self.match_history_vars.append({"char": char_var, "result": result_var})
+
         # --- SETTINGS SECTION ---
         self.settings_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.settings_frame.pack(padx=20, pady=(10, 0), fill="x")
@@ -247,7 +269,8 @@ class OverlayController(ctk.CTk):
                 "losses": self.losses_entry.get() or "0",
                 "streak": getattr(self, "current_streak", 0)  # Save the current streak
             },
-            "characters": []
+            "characters": [],
+            "last_5_games": []
         }
 
         for row in self.char_rows:
@@ -272,6 +295,12 @@ class OverlayController(ctk.CTk):
                 "games": games_str,
                 "wins": wins_str,       
                 "winrate": winrate_str 
+            })
+        
+        for match in self.match_history_vars:
+            data["last_5_games"].append({
+                "char": match["char"].get(),
+                "result": match["result"].get()
             })
 
         with open(self.json_path, "w") as f:
@@ -307,8 +336,12 @@ class OverlayController(ctk.CTk):
                 self.losses_entry.insert(0, data["weekly_record"]["losses"])
 
                 loaded_chars = data.get("characters", [])
+                loaded_last_5 = data.get("last_5_games", [])
+                for i, match_data in enumerate(loaded_last_5):
+                    if i < 5:
+                        self.match_history_vars[i]["char"].set(match_data.get("char", "None"))
+                        self.match_history_vars[i]["result"].set(match_data.get("result", "Win"))
                 
-                # If there are characters saved in the JSON, overwrite the defaults
                 if loaded_chars:
                     # Clear the 3 default rows first
                     while self.char_rows:
