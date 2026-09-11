@@ -2,7 +2,7 @@ import customtkinter as ctk
 import json
 import os
 
-# Set UI Theme
+# UI Theme
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
@@ -26,7 +26,7 @@ class OverlayController(ctk.CTk):
         self.rank_label = ctk.CTkLabel(self.rank_frame, text="Current Rank", font=("Arial", 16, "bold"))
         self.rank_label.grid(row=0, column=0, columnspan=2, pady=5, padx=10, sticky="w")
 
-        self.rank_list = ["Unranked", "Initiate", "Seeker", "Alchemist", "Arcanist", "Ritualist", "Emissary", "Archon", "Oracle", "Phantom", "Ascendant", "Eternus"]
+        self.rank_list = ["Unranked", "Initiate", "Seeker", "Acolyte", "Sentinel", "Mystic", "Ritualist", "Emissary", "Oracle", "Phantom", "Ascendant", "Eternus"]
         self.division_list = ["I", "II", "III", "IV", "V", "VI"]
 
         self.rank_var = ctk.StringVar(value="Unranked")
@@ -40,7 +40,8 @@ class OverlayController(ctk.CTk):
         # --- RECORD SECTION ---
         self.record_frame = ctk.CTkFrame(self)
         self.record_frame.pack(padx=20, pady=15, fill="x")
-        
+
+        # Record Type Dropdown
         self.record_type_var = ctk.StringVar(value="Weekly Record")
         self.record_type_menu = ctk.CTkOptionMenu(
             self.record_frame, 
@@ -124,7 +125,6 @@ class OverlayController(ctk.CTk):
 
         self.char_rows = []
         
-        
         for _ in range(3):
             self.add_char_row()
 
@@ -145,6 +145,7 @@ class OverlayController(ctk.CTk):
         self.last5_label = ctk.CTkLabel(self.last5_frame, text="Last 5 Games History", font=("Arial", 14, "bold"))
         self.last5_label.pack(anchor="w", padx=10, pady=(0, 5))
 
+        # Create 5 rows for last 5 games with character and result dropdowns
         self.match_history_vars = []
         for i in range(5):
             row_frame = ctk.CTkFrame(self.last5_frame, fg_color="transparent")
@@ -167,6 +168,7 @@ class OverlayController(ctk.CTk):
         self.settings_label = ctk.CTkLabel(self.settings_frame, text="Settings", font=("Arial", 16, "bold"))
         self.settings_label.pack(pady=0, padx=10, anchor="w")
 
+        # Current Rank Toggle
         self.show_rank_var = ctk.BooleanVar(value=True)
         self.rank_toggle = ctk.CTkCheckBox(
             self.settings_frame,
@@ -219,6 +221,7 @@ class OverlayController(ctk.CTk):
 
         self.is_loaded = True  # Set the flag to True after loading data
 
+    # --- CHARACTER ROW MANAGEMENT ---
     def add_char_row(self, name_val=None, games_val="", wins_val=""):
         # Prevent adding an absurd number of rows that break the window height
         if len(self.char_rows) >= 7:
@@ -231,20 +234,24 @@ class OverlayController(ctk.CTk):
         default_index = len(self.char_rows) % len(self.character_list)
         default_name = self.character_list[default_index]
 
+        # Create the OptionMenu for character names
         name_menu = ctk.CTkOptionMenu(row_frame, values=self.character_list, width=150)
         name_menu.set(name_val if name_val else default_name)
         name_menu.grid(row=0, column=0, padx=5)
 
+        # Create the Entry for games played
         games_entry = ctk.CTkEntry(row_frame, placeholder_text="Games", width=100)
         if games_val: games_entry.insert(0, games_val)
         games_entry.grid(row=0, column=1, padx=5)
         games_entry.bind("<KeyRelease>", lambda event: self.save_data())
 
+        # Create the Entry for wins
         char_wins_entry = ctk.CTkEntry(row_frame, placeholder_text="Wins", width=100)
         if wins_val: char_wins_entry.insert(0, wins_val)
         char_wins_entry.grid(row=0, column=2, padx=5)
         char_wins_entry.bind("<KeyRelease>", lambda event: self.save_data())
 
+        # Save the row's widgets and frame for later reference
         self.char_rows.append({
             "frame": row_frame, # Save the frame so we can destroy it later
             "name": name_menu,
@@ -252,6 +259,7 @@ class OverlayController(ctk.CTk):
             "wins": char_wins_entry
         })
 
+    # -- CHARACTER ROW MANAGEMENT ---
     def remove_char_row(self):
         # Prevent removing all rows (keep at least 1)
         if len(self.char_rows) > 1:
@@ -259,11 +267,14 @@ class OverlayController(ctk.CTk):
             last_row["frame"].destroy()
             self.save_data()
 
+    # -- DATA MANAGEMENT ---
     def save_data(self):
-        
+
+        # Check if data is loaded
         if not getattr(self, "is_loaded", False):
             return
-        
+
+        # Save the current state of the UI to the JSON file
         data = {
             "settings": {
                 "show_leaderboard": self.show_leaderboard_var.get(),
@@ -285,6 +296,7 @@ class OverlayController(ctk.CTk):
             "last_5_games": []
         }
 
+        # Calculate winrate for each character and save data
         for row in self.char_rows:
             games_str = row["games"].get() or "0"
             wins_str = row["wins"].get() or "0"
@@ -308,7 +320,8 @@ class OverlayController(ctk.CTk):
                 "wins": wins_str,       
                 "winrate": winrate_str 
             })
-        
+
+        # Save last 5 games data
         for match in self.match_history_vars:
             data["last_5_games"].append({
                 "char": match["char"].get(),
@@ -320,6 +333,7 @@ class OverlayController(ctk.CTk):
         
         print("Overlay data successfully updated!")
 
+    # -- LOAD EXISTING DATA ---
     def load_existing_data(self):
         if os.path.exists(self.json_path):
             try:
@@ -372,7 +386,8 @@ class OverlayController(ctk.CTk):
 
             except Exception as e:
                 print(f"Error loading existing JSON: {e}")
-    
+
+    # -- SCORE ADJUSTMENT LOGIC ---
     def adjust_score(self, entry_widget, amount):
         current_val = entry_widget.get()
         
@@ -400,6 +415,7 @@ class OverlayController(ctk.CTk):
 
         self.save_data()
 
+#  run the thing
 if __name__ == "__main__":
     app = OverlayController()
     app.mainloop()

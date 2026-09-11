@@ -1,19 +1,19 @@
 {
     "settings": {
-        "show_leaderboard": true,
+        "show_leaderboard": false,
         "show_record": true,
         "show_rank": true,
         "show_last5": true
     },
     "rank_info": {
-        "rank": "Archon",
-        "division": "II"
+        "rank": "Initiate",
+        "division": "III"
     },
     "weekly_record": {
         "type": "Weekly Record",
-        "wins": "3",
-        "losses": "3",
-        "streak": 0
+        "wins": "0",
+        "losses": "0",
+        "streak": 1
     },
     "characters": [
         {
@@ -24,37 +24,37 @@
         },
         {
             "name": "Seven",
-            "games": "30",
-            "wins": "21",
-            "winrate": "70%"
+            "games": "33",
+            "wins": "22",
+            "winrate": "67%"
         },
         {
             "name": "Warden",
-            "games": "4",
-            "wins": "3",
-            "winrate": "75%"
+            "games": "30",
+            "wins": "19",
+            "winrate": "63%"
         }
     ],
     "last_5_games": [
         {
-            "char": "Warden",
+            "char": "McGinnis",
+            "result": "Win"
+        },
+        {
+            "char": "McGinnis",
             "result": "Loss"
         },
         {
-            "char": "Warden",
+            "char": "McGinnis",
             "result": "Win"
         },
         {
-            "char": "Warden",
+            "char": "McGinnis",
             "result": "Win"
         },
         {
-            "char": "Warden",
+            "char": "McGinnis",
             "result": "Win"
-        },
-        {
-            "char": "Lady Geist",
-            "result": "Loss"
         }
     ]
 }
